@@ -1,18 +1,17 @@
-use std::thread;
+use std::{env, thread};
 
 mod Node;
 
 
 
 fn main() {
-    let nodes = 3;
-    let handle = thread::spawn(move || {
-        for i in 0..nodes {
-            Node::start(i);
-        }
-    });
 
-    handle.join().unwrap();
+    let arg = env::args().nth(1).unwrap();
+    let ind: i8 = arg.parse().unwrap();
+
+    println!("{}", ind);
+
+    Node::start(ind);
 
     println!("Finished");
 }
