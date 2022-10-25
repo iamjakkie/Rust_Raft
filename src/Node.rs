@@ -21,45 +21,54 @@ pub fn start(num:i8) {
     let heartbeat = 5;
     let addr = ["0.0.0.0:333", &num.to_string()].join("");
     let listener = TcpListener::bind(&addr).unwrap();
+    listener.set_nonblocking(true).expect("set nonblocking");
     println!("New node started: {}", &addr);
 
-    let mut to_connect: Vec<&String> = vec![];
+    let mut to_connect: Vec<String> = vec![];
 
     if num > 0 {
         let mut port = num-1;
-        while port > 0 {
+        while port >= 0 {
             let peer_addr = ["0.0.0.0:333", &port.to_string()].join("");
-            to_connect.push(&peer_addr);
+            println!("Added new node: {}", &peer_addr);
+            to_connect.push(peer_addr);
             port-=1;
         }
     }
 
     let mut connected: Vec<SocketAddr> = vec![];
 
-    for stream in listener.incoming(){
-        match stream {
-            Ok(stream) => {
-                thread::spawn(move || {
-                    let peer_addr = stream.peer_addr().unwrap();
-                    println!("New connection: {}", &peer_addr);
-                    // connected.push(peer_addr); // implement Copy trait
-                    handle_incoming(stream);
-                    match TcpStream::connect(&peer_addr) {
-                        Ok(mut s_stream) => {
-                            println!("Successfully connected to: {}", &peer_addr);
-                            let msg = b"test";
-                            s_stream.write(msg).unwrap();
-                        },
-                        Err(e) => {
-                            println!("Failed to connect to: {}", &peer_addr);
-                        }
-                    }
-                });
-            }
-            Err(e) => {
-                println!("Error: {}", e);
-            }
-        };
+    loop {
+        match listener.accept() {
+            Ok((_socket, addr)) => println!("new client: {addr:?}"),
+            Err(e) => println!("couldn't get client: {e:?}"),
+        }
     }
-    drop(listener);
+
+    // for stream in listener.incoming(){
+    //     match stream {
+    //         Ok(stream) => {
+    //             thread::spawn(move || {
+    //                 let peer_addr = stream.peer_addr().unwrap();
+    //                 println!("New connection: {}", &peer_addr);
+    //                 // connected.push(peer_addr); // implement Copy trait
+    //                 handle_incoming(stream);
+    //                 match TcpStream::connect(&peer_addr) {
+    //                     Ok(mut s_stream) => {
+    //                         println!("Successfully connected to: {}", &peer_addr);
+    //                         let msg = b"test";
+    //                         s_stream.write(msg).unwrap();
+    //                     },
+    //                     Err(e) => {
+    //                         println!("Failed to connect to: {}", &peer_addr);
+    //                     }
+    //                 }
+    //             });
+    //         }
+    //         Err(e) => {
+    //             println!("Error: {}", e);
+    //         }
+    //     };
+    // }
+    // drop(listener);
 }
