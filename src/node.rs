@@ -9,6 +9,7 @@ pub fn init(port:u16, peer_addrs: HashSet<SocketAddr>) {
         .map(|socket| socket.ip())
         .collect::<HashSet<IpAddr>>();
 
+    println!("Spawning node");
     thread::spawn(move || {
         connect(Vec::from_iter(peer_addrs))
     });
@@ -16,6 +17,10 @@ pub fn init(port:u16, peer_addrs: HashSet<SocketAddr>) {
     thread::spawn(move || {
         listen(port)
     });
+
+    loop {
+
+    }
 }
 
 pub fn listen(port:u16){

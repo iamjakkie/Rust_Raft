@@ -8,10 +8,12 @@ mod node;
 fn main() {
     let peers: Vec<SocketAddr> = vec![SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3330),
                                       SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3331)];
-    let nodes: Vec<u16> = vec![3330, 3331];
+
+    let uport:u16 = env::args().nth(1).unwrap().parse().unwrap();
+
 
     node::init(
-        nodes[0],
+        uport,
         peers
             .iter()
             .map(|addr| *addr)
