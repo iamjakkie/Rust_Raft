@@ -4,10 +4,11 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 mod node;
 
-
-fn main() {
+#[tokio::main]
+async fn main() {
     let peers: Vec<SocketAddr> = vec![SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3330),
-                                      SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3331)];
+                                      SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3331),
+                                      SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 3332)];
 
     let uport:u16 = env::args().nth(1).unwrap().parse().unwrap();
 
@@ -18,7 +19,7 @@ fn main() {
             .iter()
             .map(|addr| *addr)
             .collect::<HashSet<SocketAddr>>()
-    );
+    ).await;
 
     println!("Finished");
 }
