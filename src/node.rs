@@ -12,7 +12,7 @@ pub async fn init(port:u16, peer_addrs: HashSet<SocketAddr>) {
         .collect::<HashSet<IpAddr>>();
 
     println!("Spawning node");
-    connect(port,Vec::from_iter(peer_addrs));
+    connect(port,Vec::from_iter(peer_addrs)).await;
 
     listen(port).await;
 
@@ -41,19 +41,20 @@ pub async fn listen(port:u16){
     }
 }
 
-pub fn connect(
+pub async fn connect(
     port:u16,
     mut peer_addrs: Vec<SocketAddr>
 ){
     // log::debug!("Connecting to peer...");
     println!("Connecting to peer...");
 
-    let mut streams = vec![];
+    let mut streams: Vec<TcpStream> = vec![];
     let mut retries :u8 = 0;
 
     for peer_addr in peer_addrs {
+        println!("{}", peer_addr.port());
         if peer_addr.port() == port { continue; }
-        if let Ok(handler) = task::spawn(async move {
+        let res = task::spawn(async move {
             loop {
                 match TcpStream::connect(peer_addr).await {
                     Ok(stream) => {
@@ -69,10 +70,21 @@ pub fn connect(
                     }
                 }
             }
-        }){
-            streams.append(handler);
-        }
+        });
+        match res.await {
 
+            Ok(stream) => {
+                println!("Added connection to {}", stream.peer_addr().unwrap());
+                streams.push(stream);
+            },
+            _ => {
+
+            }
+        }
+        println!("Connected to {}", peer_addr);
+
+        // let handle = handler.await.unwrap();
+        // println!("{}", handle.peer_addr().unwrap());
 
     }
 
